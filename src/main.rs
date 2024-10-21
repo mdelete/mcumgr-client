@@ -16,35 +16,35 @@ use mcumgr_client::*;
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 struct Cli {
-    /// device name
+    /// Device name
     #[arg(short, long, default_value = "")]
     device: String,
 
-    /// verbose mode
+    /// Verbose mode
     #[arg(short, long)]
     verbose: bool,
 
-    /// initial timeout in seconds
+    /// Initial timeout in seconds
     #[arg(short = 't', long = "initial_timeout", default_value_t = 60)]
     initial_timeout_s: u32,
 
-    /// subsequent timeout in msec
+    /// Subsequent timeout in msec
     #[arg(short = 'u', long = "subsequent_timeout", default_value_t = 200)]
     subsequent_timeout_ms: u32,
 
-    // number of retry per packet
+    // Number of retry per packet
     #[arg(long, default_value_t = 4)]
     nb_retry: u32,
 
-    /// maximum length per line
+    /// Maximum length per line
     #[arg(short, long, default_value_t = 128)]
     linelength: usize,
 
-    /// maximum length per request
+    /// Maximum length per request
     #[arg(short, long, default_value_t = 512)]
     mtu: usize,
 
-    /// baudrate
+    /// Baudrate
     #[arg(short, long, default_value_t = 115_200)]
     baudrate: u32,
 
@@ -68,26 +68,29 @@ impl From<&Cli> for SerialSpecs {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// list slots on the device
+    /// List slots on the device
     List,
 
-    /// reset the device
+    /// Reset the device
     Reset,
 
-    /// upload a file to the device
+    /// Upload a file to the device
     Upload {
         filename: PathBuf,
 
-        /// slot number
+        /// Slot number
         #[arg(short, long, default_value_t = 0)]
         slot: u8,
     },
 
+    /// Test image againt given hash
     Test {
         hash: String,
         #[arg(short, long)]
         confirm: Option<bool>,
     },
+
+    /// Erase image at slot
     Erase {
         #[arg(short, long)]
         slot: Option<u32>,
