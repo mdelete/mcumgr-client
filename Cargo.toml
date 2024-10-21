@@ -2,12 +2,10 @@
 name = "mcumgr-client"
 version = "0.0.7"
 edition = "2021"
-repository = "https://github.com/vouch-opensource/mcumgr-client/"
+repository = "https://github.com/mdelete/mcumgr-client/"
 license = "Apache-2.0"
-description = "Run MCUmgr commands for uploading firmware updates from a PC to an embedded device"
-include = [
-    "/src"
-]
+description = "Run MCUmgr commands for uploading firmware updates to an embedded device"
+include = ["/src"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -33,6 +31,7 @@ serde_bytes = "0.11"
 serde_cbor = "0.11"
 serde_json = "1.0"
 serde_repr = "0.1"
-serialport = {version = "4.2", default-features = false}
+serialport = { version = "4.2", default-features = false }
 sha2 = "0.10"
 simplelog = "0.12"
+nusb = "0.1.10"

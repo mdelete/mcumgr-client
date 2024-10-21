@@ -2,17 +2,6 @@
 
 This is a Rust program to run mcumgr commands, used for example for Zephyr, for uploading firmware updates from a PC to an embedded device. It is a faster alternative to [the mcumgr Go program](https://github.com/apache/mynewt-mcumgr-cli).
 
-## Download
-
-Released builds for x86-64 Windows, Linux, and MacOS are [here](https://github.com/vouch-opensource/mcumgr-client/releases).
-
-Example download:
-```
-wget https://github.com/vouch-opensource/mcumgr-client/releases/latest/download/mcumgr-client-linux-x86.zip
-wget -O - https://github.com/vouch-opensource/mcumgr-client/releases/latest/download/mcumgr-client-linux-x86.zip.sha256sum | sha256sum --check
-unzip mcumgr-client-linux-x86.zip
-```
-
 ## Build Dependencies
 
 Install Rust:
@@ -34,12 +23,12 @@ List existing images:
 
 Example to flash a firmware image:
 ```
-./target/release/mcumgr-client -d /dev/ttyACM0 upload firmware-image.bin 
+./target/release/mcumgr-client -d /dev/ttyACM0 upload firmware-image.bin
 ```
 
 Example to flash an external flash in slot 3, and with the increased MTU and line length settings as explained in the notes:
 ```
-./target/release/mcumgr-client -s 3 -m 4096 -l 8192 -d /dev/ttyACM0 upload ext-flash.bin 
+./target/release/mcumgr-client -s 3 -m 4096 -l 8192 -d /dev/ttyACM0 upload ext-flash.bin
 ```
 
 Example to rest a device:
@@ -54,6 +43,9 @@ mcumgr-client upload ext-flash-slot3.bin
 ```
 
 # Notes
+
+** works for me even if the device's CONFIG_CDC_ACM_BULK_EP_MPS is 64 and the clients runs macos or windows **
+
 There is a bug in the Zephyr CDC ACM driver. When building mcuboot for it, it needs this patch:
 
 ```
@@ -61,11 +53,11 @@ There is a bug in the Zephyr CDC ACM driver. When building mcuboot for it, it ne
 +++ b/subsys/usb/device/class/cdc_acm.c
 @@ -70,7 +70,7 @@ LOG_MODULE_REGISTER(usb_cdc_acm, CONFIG_USB_CDC_ACM_LOG_LEVEL);
  #define CDC_ACM_DEFAULT_BAUDRATE {sys_cpu_to_le32(115200), 0, 0, 8}
- 
+
  /* Size of the internal buffer used for storing received data */
 -#define CDC_ACM_BUFFER_SIZE (CONFIG_CDC_ACM_BULK_EP_MPS)
 +#define CDC_ACM_BUFFER_SIZE 512
- 
+
  /* Serial state notification timeout */
  #define CDC_CONTROL_SERIAL_STATE_TIMEOUT_US 100000
 ```
@@ -80,7 +72,7 @@ CONFIG_BOOT_SERIAL_MAX_RECEIVE_SIZE=4096
 The line length and MTU size can be increased, like this for the example:
 
 ```
-./target/release/mcumgr-client -m 4096 -l 8192 -d /dev/ttyACM0 upload firmware-image.bin 
+./target/release/mcumgr-client -m 4096 -l 8192 -d /dev/ttyACM0 upload firmware-image.bin
 ```
 
 This needs 17 seconds for the same file (instead of 1:48 minutes with the default buffer sizes), which is more than 10 times faster than the original mcumgr Go program.

@@ -7,6 +7,7 @@ use log::{error, info, LevelFilter};
 use serialport::available_ports;
 use simplelog::{ColorChoice, Config, SimpleLogger, TermLogger, TerminalMode};
 use std::env;
+use std::ops::Shr;
 use std::path::PathBuf;
 use std::process;
 
@@ -78,7 +79,7 @@ enum Commands {
         filename: PathBuf,
 
         /// slot number
-        #[arg(short, long, default_value_t = 1)]
+        #[arg(short, long, default_value_t = 0)]
         slot: u8,
     },
 
@@ -94,12 +95,6 @@ enum Commands {
 }
 
 fn main() {
-    // show program name, version and copyright
-    let name = env!("CARGO_PKG_NAME");
-    let version = env!("CARGO_PKG_VERSION");
-    println!("{} {}, Copyright © 2024 Vouch.io LLC", name, version);
-    println!("");
-
     // parse command line arguments
     let mut cli = Cli::parse();
 
@@ -120,6 +115,27 @@ fn main() {
     // if no device is specified, try to auto detect it
     if cli.device.is_empty() {
         let mut bootloaders = Vec::new();
+
+        match nusb::list_devices() {
+            Ok(devices) => {
+                for device in devices {
+                    if device
+                        .product_string()
+                        .unwrap_or_default()
+                        .contains(&"MCUBOOT")
+                    {
+                        // FIXME: only apple
+                        info!(
+                            "Found USB MCUBOOT device @ {:x}01", // this '01' append of the cdc driver is a long standing bug in osx
+                            device.location_id().shr(16)
+                        )
+                        // FIXME: how to get from WinUSB device name to COMx ???
+                    }
+                }
+            }
+            Err(_) => {}
+        }
+
         match available_ports() {
             Ok(ports) => {
                 for port in ports {
@@ -213,9 +229,9 @@ fn main() {
                 }),
             )
         }(),
-        Commands::Test { hash, confirm } => || -> Result<(), Error> { 
-            test(&specs, hex::decode(hash)?, *confirm)
-        }(),
+        Commands::Test { hash, confirm } => {
+            || -> Result<(), Error> { test(&specs, hex::decode(hash)?, *confirm) }()
+        }
         Commands::Erase { slot } => erase(&specs, *slot),
     };
 

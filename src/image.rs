@@ -63,7 +63,7 @@ pub fn erase(specs: &SerialSpecs, slot: Option<u32>) -> Result<(), Error> {
     // open serial port
     let mut port = open_port(specs)?;
 
-    let req = ImageEraseReq { slot: slot };
+    let req = ImageEraseReq { slot };
     let body = serde_cbor::to_vec(&req)?;
     // send request
     let (data, request_header) = encode_request(
@@ -96,10 +96,7 @@ pub fn test(specs: &SerialSpecs, hash: Vec<u8>, confirm: Option<bool>) -> Result
     // open serial port
     let mut port = open_port(specs)?;
 
-    let req = ImageStateReq {
-        hash: hash,
-        confirm: confirm,
-    };
+    let req = ImageStateReq { hash, confirm };
     let body = serde_cbor::to_vec(&req)?;
     // send request
     let (data, request_header) = encode_request(
@@ -166,16 +163,6 @@ where
 {
     let filename_string = filename.to_string_lossy();
     info!("upload file: {}", filename_string);
-
-    // special feature: if the name contains "slot1" or "slot3", then use this slot
-    let filename_lowercase = filename_string.to_lowercase();
-    let mut slot = slot;
-    if filename_lowercase.contains(&"slot1".to_lowercase()) {
-        slot = 1;
-    }
-    if filename_lowercase.contains(&"slot3".to_lowercase()) {
-        slot = 3;
-    }
     info!("flashing to slot {}", slot);
 
     // open serial port
