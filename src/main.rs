@@ -124,16 +124,16 @@ fn main() {
                         .unwrap_or_default()
                         .contains(&"MCUBOOT")
                     {
-                        // FIXME: only apple
-                        if env::consts::OS == "macos" {
+                        if cfg!(target_os = "macos") {
                             info!(
-                                "Found USB MCUBOOT device @ {:x}01", // this '01' append of the cdc driver is a long standing bug in osx
+                                "Found MCUBOOT device @ /dev/cu.usbmodem{:x}01", // this '01' append of the cdc driver is a long standing bug in osx
                                 device.location_id().shr(16)
                             )
+                        } else if cfg!(windows) {
+                            info!("Found WinUSB MCUBOOT device {:?}", device) // FIXME: how to get from WinUSB device name to COMx ???
                         } else {
-                            info!("Found USB MCUBOOT device @ {:?}", device)
-                        }
-                        // FIXME: how to get from WinUSB device name to COMx ???
+                            info!("Found USB MCUBOOT device {:?}", device)
+                        };
                     }
                 }
             }
