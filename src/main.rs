@@ -125,10 +125,14 @@ fn main() {
                         .contains(&"MCUBOOT")
                     {
                         // FIXME: only apple
-                        info!(
-                            "Found USB MCUBOOT device @ {:x}01", // this '01' append of the cdc driver is a long standing bug in osx
-                            device.location_id().shr(16)
-                        )
+                        if env::consts::OS == "macos" {
+                            info!(
+                                "Found USB MCUBOOT device @ {:x}01", // this '01' append of the cdc driver is a long standing bug in osx
+                                device.location_id().shr(16)
+                            )
+                        } else {
+                            info!("Found USB MCUBOOT device @ {:?}", device)
+                        }
                         // FIXME: how to get from WinUSB device name to COMx ???
                     }
                 }
