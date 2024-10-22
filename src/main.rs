@@ -141,32 +141,36 @@ fn main() {
         //     }
         //     Err(_) => {}
         // }
-
+        let vid: u16 = 12259;
+        let mcuboot_pid: u16 = 256;
+        let application_pid: u16 = 10;
         match available_ports() {
             Ok(ports) => {
                 for port in ports {
                     //info!("Found PORT {:?}", port);
                     match port.port_type {
-                        SerialPortType::UsbPort(info) => {
-                            // MCUBOOT - FIXME: config values for this
-                            if info.vid == 12259 && info.pid == 256 {
+                        SerialPortType::UsbPort(info) if info.vid == vid => {
+                            if info.pid == mcuboot_pid {
                                 info!(
                                     "Found MCUBOOT device with serial {}",
                                     info.serial_number.unwrap_or("".to_string())
                                 );
                                 let name = port.port_name;
-                                // on Mac, use only special names
+                                // on Mac, use only cu device
                                 if env::consts::OS == "macos" {
                                     if name.contains("cu.usbmodem") {
-                                        //bootloaders.push(name);
                                         cli.device = name;
                                         break;
                                     }
                                 } else {
-                                    //bootloaders.push(name);
                                     cli.device = name;
                                     break;
                                 }
+                            } else if info.pid == application_pid {
+                                error!(
+                                    "Found device with serial {} but bootloader was not enabled. Please hold button before inserting.",
+                                    info.serial_number.unwrap_or("n/a".to_string())
+                                );
                             }
                         }
                         _ => {}
