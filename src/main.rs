@@ -162,17 +162,16 @@ fn main() {
                                     if name.contains("cu.usbmodem") {
                                         //bootloaders.push(name);
                                         cli.device = name;
+                                        break;
                                     }
                                 } else {
                                     //bootloaders.push(name);
                                     cli.device = name;
+                                    break;
                                 }
                             }
                         }
-                        _ => {
-                            error!("No MCUBOOT device found.");
-                            process::exit(1);
-                        }
+                        _ => {}
                     }
                 }
             }
