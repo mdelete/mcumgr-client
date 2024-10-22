@@ -148,10 +148,8 @@ fn main() {
                     //info!("Found PORT {:?}", port);
                     match port.port_type {
                         SerialPortType::UsbPort(info) => {
-                            if info.pid == 256 // MCUBOOT - FIXME: config value for this
-                                && info.vid == 12259 // FIXME: config value for this
-                                && info.product == Some("MCUBOOT".to_string())
-                            {
+                            // MCUBOOT - FIXME: config values for this
+                            if info.vid == 12259 && info.pid == 256 {
                                 info!(
                                     "Found MCUBOOT device with serial {}",
                                     info.serial_number.unwrap_or("".to_string())
@@ -179,6 +177,11 @@ fn main() {
                 error!("Error listing serial ports: {}", e);
                 process::exit(1);
             }
+        }
+
+        if cli.device.is_empty() {
+            error!("No MCUBOOT device found.");
+            process::exit(1);
         }
 
         // if there is one bootloader device, then use it
