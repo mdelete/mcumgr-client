@@ -11,6 +11,7 @@ target/
 
 # Test files
 *.bin
+*.zip
 
 # osx
 .DS_Store

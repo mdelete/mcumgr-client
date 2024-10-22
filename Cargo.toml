@@ -35,3 +35,4 @@ serialport = { version = "4.2", default-features = false }
 sha2 = "0.10"
 simplelog = "0.12"
 nusb = "0.1.10"
+zip = "2.2.0"

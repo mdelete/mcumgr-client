@@ -5,8 +5,11 @@ use humantime::format_duration;
 use log::{debug, info, warn};
 use serde_cbor;
 use serde_json;
+//use serialport::new;
 use sha2::{Digest, Sha256};
+use std::ffi::OsStr;
 use std::fs::read;
+use std::io::Read;
 use std::path::PathBuf;
 use std::time::Duration;
 use std::time::Instant;
@@ -161,16 +164,28 @@ pub fn upload<F>(
 where
     F: FnMut(u64, u64),
 {
-    let filename_string = filename.to_string_lossy();
-    info!("upload file: {}", filename_string);
-    info!("flashing to slot {}", slot);
+    let data: Vec<u8>;
+
+    info!("flashing file {}", filename.to_string_lossy());
+
+    if filename.extension() == Some(OsStr::new("zip")) {
+        let zipfile = std::fs::File::open(filename)?;
+        let mut archive = zip::ZipArchive::new(zipfile)?;
+        // FIXME: read manifest.json and extract value of key files.0.file
+        let mut file = archive.by_name("cubo-5340.bin")?;
+        let mut buf: Vec<u8> = Vec::new();
+        file.read_to_end(&mut buf)?;
+        data = buf.into()
+    } else if filename.extension() == Some(OsStr::new("bin")) {
+        data = read(filename)?;
+    } else {
+        bail!("File type not supported");
+    }
+
+    info!("flashing {} bytes to slot {}", data.len(), slot);
 
     // open serial port
     let mut port = open_port(specs)?;
-
-    // load file
-    let data = read(filename)?;
-    info!("{} bytes to transfer", data.len());
 
     // transfer in blocks
     let mut off: usize = 0;
