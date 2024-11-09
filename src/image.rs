@@ -3,9 +3,9 @@
 use anyhow::{bail, Error, Result};
 use humantime::format_duration;
 use log::{debug, info, warn};
+use serde::Deserialize;
 use serde_cbor;
 use serde_json;
-//use serialport::new;
 use sha2::{Digest, Sha256};
 use std::ffi::OsStr;
 use std::fs::read;
@@ -155,6 +155,35 @@ pub fn list(specs: &SerialSpecs) -> Result<ImageStateRsp, Error> {
     Ok(ans)
 }
 
+#[derive(Debug, Deserialize)]
+struct ManifestFile {
+    file: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct Manifest {
+    //version_MCUBOOT: String,
+    files: Vec<ManifestFile>,
+}
+
+pub fn parse_data(filename: &PathBuf) -> Result<Vec<u8>, Error> {
+    if filename.extension() == Some(OsStr::new("zip")) {
+        let zipfile = std::fs::File::open(filename)?;
+        let mut archive = zip::ZipArchive::new(zipfile)?;
+        let file = archive.by_name("manifest.json")?;
+        let manifest: Manifest = serde_json::from_reader(file)?;
+        let filename = manifest.files.first().unwrap().file.clone();
+        let mut file = archive.by_name(&filename)?;
+        let mut buf: Vec<u8> = Vec::new();
+        file.read_to_end(&mut buf)?;
+        Ok(buf)
+    } else if filename.extension() == Some(OsStr::new("bin")) {
+        read(filename).map_err(anyhow::Error::from)
+    } else {
+        bail!("Only .bin and .zip files are supported");
+    }
+}
+
 pub fn upload<F>(
     specs: &SerialSpecs,
     filename: &PathBuf,
@@ -164,23 +193,9 @@ pub fn upload<F>(
 where
     F: FnMut(u64, u64),
 {
-    let data: Vec<u8>;
-
     info!("flashing file {}", filename.to_string_lossy());
 
-    if filename.extension() == Some(OsStr::new("zip")) {
-        let zipfile = std::fs::File::open(filename)?;
-        let mut archive = zip::ZipArchive::new(zipfile)?;
-        // FIXME: read manifest.json and extract value of key files.0.file
-        let mut file = archive.by_name("cubo-5340.bin")?;
-        let mut buf: Vec<u8> = Vec::new();
-        file.read_to_end(&mut buf)?;
-        data = buf.into()
-    } else if filename.extension() == Some(OsStr::new("bin")) {
-        data = read(filename)?;
-    } else {
-        bail!("File type not supported");
-    }
+    let data = parse_data(&filename)?;
 
     info!("flashing {} bytes to slot {}", data.len(), slot);
 
@@ -332,4 +347,15 @@ where
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_manifest() {
+        let data = parse_data(&PathBuf::from("dfu_application.zip"));
+        assert_eq!(data.unwrap().len(), 225251);
+    }
 }

@@ -18,7 +18,7 @@ Without `--release`, it builds in debug mode.
 ## Run
 List existing images:
 ```
-./target/release/mcumgr-client -d /dev/ttyACM0 list
+./target/release/mcumgr-client list
 ```
 
 Example to flash a firmware image:
