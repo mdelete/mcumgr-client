@@ -1,7 +1,7 @@
 // Copyright © 2023-2024 Vouch.io LLC
 
-use hex_buffer_serde::{Hex as _, HexForm};
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
+use hex_buffer_serde::{Hex as _, HexForm};
 use num;
 use num_derive::FromPrimitive;
 use serde::{Deserialize, Serialize};
@@ -233,7 +233,6 @@ pub struct ImageStateEntry {
     #[serde(default = "default_false")]
     pub permanent: bool,
 }
-
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct ImageStateReq {
