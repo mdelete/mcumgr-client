@@ -190,10 +190,10 @@ impl NmpHdr {
     }
 }
 
-#[derive(Debug, Clone, Copy, Deserialize, Serialize)]
-pub struct NmpBase {
-    pub hdr: NmpHdr,
-}
+// #[derive(Debug, Clone, Copy, Deserialize, Serialize)]
+// pub struct NmpBase {
+//     pub hdr: NmpHdr,
+// }
 
 #[derive(Debug, Clone, Copy, PartialEq, FromPrimitive, Deserialize, Serialize)]
 pub enum SplitStatus {

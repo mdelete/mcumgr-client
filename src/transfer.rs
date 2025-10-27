@@ -1,13 +1,13 @@
 // Copyright © 2023-2024 Vouch.io LLC
 
-use anyhow::{bail, Context, Error, Result};
-use base64::{engine::general_purpose, Engine as _};
+use anyhow::{Context, Error, Result, bail};
+use base64::{Engine as _, engine::general_purpose};
 use byteorder::{BigEndian, ByteOrder, WriteBytesExt};
 use crc16::*;
 use hex;
 use lazy_static::lazy_static;
 use log::debug;
-use rand::{thread_rng, Rng};
+use rand::Rng;
 use serde_cbor;
 use serialport::SerialPort;
 use std::cmp::min;
@@ -25,7 +25,7 @@ pub struct SerialSpecs {
     pub nb_retry: u32,
     pub linelength: usize,
     pub mtu: usize,
-    pub baudrate: u32
+    pub baudrate: u32,
 }
 
 fn read_byte(port: &mut dyn SerialPort) -> Result<u8, Error> {
@@ -56,7 +56,7 @@ pub fn open_port(specs: &SerialSpecs) -> Result<Box<dyn SerialPort>, Error> {
 // thread-safe counter, initialized with a random value on first call
 pub fn next_seq_id() -> u8 {
     lazy_static! {
-        static ref COUNTER: AtomicU8 = AtomicU8::new(thread_rng().gen::<u8>());
+        static ref COUNTER: AtomicU8 = AtomicU8::new(rand::rng().random::<u8>());
     }
     COUNTER.fetch_add(1, Ordering::SeqCst)
 }
